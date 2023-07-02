@@ -4,7 +4,7 @@ import pandas as pd
 from data_access_db import get_data_from_db
 from data_access_nas import get_data_from_nas
 
-def join_and_process_data(patient_id, date_of_surgery):
+def join_and_process_data(patient_id:str, date_of_surgery:str) -> pd.DataFrame:
 
     ############### 전부 예시임. 지우고 적절하게 코드 작성할 것 ###############
     nas_data = get_data_from_nas(patient_id, date_of_surgery)
