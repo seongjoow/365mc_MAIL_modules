@@ -1,0 +1,230 @@
+WITH 초음파1 AS( -- 병원이 보내줌
+SELECT A.STARTBRAN,A.PSENTRY,A.CONCNT,A.SETSEQ,A.SETDATE,A.CTRLNAME,A.CTRLVALUE,B.CTRLVALUE AS 초음파사이즈
+FROM(SELECT *
+FROM tsfmc_data.dbo.EMR060T
+WHERE SUBSTRING(CTRLNAME,1,3)!='chk') A
+LEFT JOIN (SELECT * FROM tsfmc_data.dbo.EMR060T WHERE SUBSTRING(CTRLNAME,1,3)!='chk' AND SUBSTRING(CTRLNAME,1,8)='txt_Size') B
+ON A.PSENTRY=B.PSENTRY AND A.CONCNT=B.CONCNT AND A.SETDATE=B.SETDATE AND SUBSTRING(A.CTRLNAME,10,3)=SUBSTRING(B.CTRLNAME,9,3)
+),
+
+초음파2 AS(SELECT C.STARTBRAN,C.PSENTRY,C.CONCNT,C.SETSEQ,C.SETDATE,C.CTRLVALUE,C.초음파사이즈
+FROM 초음파1 C),
+
+초음파 AS(SELECT D.PSENTRY as 고객번호,
+case CTRLVALUE 
+when '윗배' then '윗배'
+when '아랫배' then '아랫배'
+when '허 뒤 좌 안쪽' then '허뒤좌안쪽'
+when '허 뒤 좌외측' then '허뒤좌외측'
+when '좌팔 외측' then '좌팔외측'
+when '좌팔 내측' then '좌팔내측'
+when '좌 러브' then '좌러브'
+when '좌 브라' then '좌브라'
+when '종 좌' then '종좌'
+when '종 좌 외측' then '종좌외측'
+end as 부위명,
+초음파사이즈,
+SETDATE as 측정일자
+FROM(SELECT *,ISNUMERIC(초음파사이즈) AS NUMERIC
+FROM 초음파2) D
+WHERE D.NUMERIC=1 AND 초음파사이즈 NOT LIKE('%,%')
+AND SETDATE > '20220201'),
+
+초음파_피벗 as(SELECT *
+FROM (
+SELECT 고객번호, 
+   SUBSTRING(부위명, 1, CHARINDEX(' ', 부위명+' ') - 1) AS CTRL, 
+   초음파사이즈, 측정일자
+FROM 초음파
+) AS t
+PIVOT (
+MAX(초음파사이즈)
+FOR CTRL IN (윗배, 아랫배, 허뒤좌안쪽, 허뒤좌외측, 좌팔외측, 좌팔내측, 좌러브, 좌브라, 종좌, 종좌외측)
+) AS p),
+
+후증상1 AS(SELECT A.*,B.MA_CODE,B.OPDATE -- 병원이 보내줌
+FROM(SELECT *
+FROM tsfmc_data.dbo.EMR021T
+WHERE STARTBRAN!='90' AND SUBSTRING(CTRLNAME,1,3)='Rad' AND CTRLVALUE='True') A
+LEFT JOIN (SELECT * FROM tsfmc_data.dbo.EMR020T WHERE STARTBRAN!='90') B
+ON A.PK_TIME=B.PK_TIME),
+
+후증상2 AS(SELECT CONCAT(PSENTRY,OPDATE) AS PK,PSENTRY,CONCNT,INDATE AS 작성일, CTRLNAME AS 후증상종류및유무,INTIME AS 작성시간,INUSER AS 작성자,PK_TIME,MA_CODE,OPDATE
+FROM 후증상1), -- 병원이 보내줌
+
+후증상 AS(SELECT  -- 병원이 보내줌
+C.PSENTRY as 고객번호, C.OPDATE as 수술일자, C.CONCNT as 기수, D.수술의,D.부위명, C.후증상종류및유무 as target, D.지방량
+FROM 후증상2 C
+LEFT JOIN (SELECT 고객번호,수술일자,수술코드,수술의,부위명,SUM(지방량) AS 지방량
+FROM tsfmc_data.dbo.Z_OPERATION
+GROUP BY 고객번호,수술일자,수술코드,수술의,부위명) D
+ON C.OPDATE=D.수술일자 AND C.PSENTRY=D.고객번호 AND C.MA_CODE=D.수술코드),
+
+MAIL AS(
+select 고객번호, 수술일자, 수술의, 수술소요시간, sex as 성별, age as 나이 from tsfmc_mailsystem.dbo.MAIL_OPE_LIST
+),
+
+SCAN AS(select 
+CHART_NO as 고객번호,
+SCAN_NO as 스캔번호,
+GIRTH_ABDOMEN as 복부최대둘레,
+GIRTH_UPPER_ABDOMEN as 상복부최대둘레,
+GIRTH_LOWER_ABDOMEN as 하복부최대둘레,
+GIRTH_THIGH as 허벅지둘레,
+GIRTH_CALF as 종아리둘레,
+GIRTH_FOREAM as 팔둘레,
+PV_CHEST as 가슴부분체적,
+PV_ABDOMEN as 복부부분체적,
+PV_UPPER_ABDOMEN as 상복부부분체적,
+PV_LOWER_ABDOMEN as 하복부부분체적,
+PV_THIGH as 허벅지부분체적,
+PV_CALF as 종아리부분체적,
+CONVERT(CHAR(8), ADD_DT, 112) as 측정일자,
+GUBUN as 전후구분,
+PV_FOREARM_LEFT as 팔좌부분체적,
+PV_FOREARM_RIGHT as 팔우부분체적,
+PV_SOLARPLEXUS as 명치부분체적,
+PV_PELVIS as 골반부분체적,
+PV_KNEE_LEFT as 종아리좌부분체적,
+PV_KNEE_RIGHT as 종아리우부분체적,
+BACKNECK_X as 뒷목점좌표X,
+BACKNECK_Y as 뒷목점좌표Y,
+BACKNECK_Z as 뒷목점좌표Z,
+SHOULDERLATERAL_LEFT_X as 왼쪽겨드랑첨수직선과만나는어깨점X좌표,
+SHOULDERLATERAL_LEFT_Y as 왼쪽겨드랑첨수직선과만나는어깨점Y좌표,
+SHOULDERLATERAL_LEFT_Z as 왼쪽겨드랑첨수직선과만나는어깨점Z좌표,
+SHOULDERLATERAL_RIGHT_X as 오른쪽겨드랑첨수직선과만나는어깨점X좌표,
+SHOULDERLATERAL_RIGHT_Y as 오른쪽겨드랑첨수직선과만나는어깨점Y좌표,
+SHOULDERLATERAL_RIGHT_Z as 오른쪽겨드랑첨수직선과만나는어깨점Z좌표,
+SHOULDER_LEFT_X as 왼쪽어깨점X좌표,
+SHOULDER_LEFT_Y as 왼쪽어깨점Y좌표,
+SHOULDER_LEFT_Z as 왼쪽어깨점Z좌표,
+SHOULDER_RIGHT_X as 오른쪽어깨점X좌표,
+SHOULDER_RIGHT_Y as 오른쪽어깨점Y좌표,
+SHOULDER_RIGHT_Z as 오른쪽어깨점Z좌표,
+REAL_AXILLA_LEFT_X as 왼쪽겨드랑점X좌표,
+REAL_AXILLA_LEFT_Y as 왼쪽겨드랑점Y좌표,
+REAL_AXILLA_LEFT_Z as 왼쪽겨드랑점Z좌표,
+REAL_AXILLA_RIGHT_X as 오른쪽겨드랑점X좌표,
+REAL_AXILLA_RIGHT_Y as 오른쪽겨드랑점Y좌표,
+REAL_AXILLA_RIGHT_Z as 오른쪽겨드랑점Z좌표,
+AXILLA_LEFT_X as 왼쪽겨드랑점X좌표MESH형상,
+AXILLA_LEFT_Y as 왼쪽겨드랑점Y좌표MESH형상,
+AXILLA_LEFT_Z as 왼쪽겨드랑점Z좌표MESH형상,
+AXILLA_RIGHT_X as 오른쪽겨드랑점X좌표MESH형상,
+AXILLA_RIGHT_Y as 오른쪽겨드랑점Y좌표MESH형상,
+AXILLA_RIGHT_Z as 오른쪽겨드랑점Z좌표MESH형상,
+CHEST_Y as 가슴높이,
+WAIST_Y as 허리높이,
+NAVEL_X as 배꼽X좌표,
+NAVEL_Y as 배꼽Y좌표배꼽높이,
+NAVEL_Z as 배꼽Z좌표,
+LOW_ABDOMEN_Y as 하복부높이,
+HIP_Y as 엉덩이높이,
+CROTCH_X as 샅X좌표,
+CROTCH_Y as 샅Y좌표샅높이,
+CROTCH_Z as 샅Z좌표,
+THICKTHIGH_Y as 허벅지높이,
+KNEE_Y as 무릎높이,
+CALF_Y as 종아리높이,
+ABDOMEN_MAX_Y as 복부최대둘레높이,
+UPPER_ABDOMEN_MAX_Y as 상복부최대둘레높이,
+LOWER_ABDOMEN_MAX_Y as 하복부최대둘레높이,
+PV_CHEST_START_Y as 가슴부위시작높이,
+PV_CHEST_END_Y as 가슴부의끝높이,
+PV_ABDOMEN_START_Y as 복부부위시작높이,
+PV_ABDOMEN_END_Y as 복부부위끝높이,
+PV_UPPER_ABDOMEN_START_Y as 상복부부위시작높이,
+PV_UPPER_ABDOMEN_END_Y as 상복부부위끝높이,
+PV_LOWER_ABDOMEN_START_Y as 하복부부위시작높이,
+PV_LOWER_ABDOMEN_END_Y as 하복부부위끝높이,
+PV_THIGH_START_Y as 허벅지부위시작높이,
+PV_THIGH_END_Y as 허벅지부위끝높이,
+PV_CALF_START_Y as 종아리부위시작높이,
+PV_CALF_END_Y as 종아리부위끝높이,
+ELBOW_LEFT_X as 팔뚝부위왼쪽X좌표,
+ELBOW_RIGHT_X as 팔뚝부위오른쪽X좌표,
+SOLARPLEXUS_Y as 명치부위Y좌표명치높이,
+PELVIS_Y as 골반부위Y좌표골반높이,
+STATURE as 메쉬신장,
+VOLUME as 체적,
+SURFACEAREA as 총표면적,
+BMI as 체질량지수,
+WCR as 허리가슴비율WaisttoChestRatio,
+WHR as 허리엉덩이비율WaisttoHipRatio,
+WHTR as 허리신장비율WaisttoHeightRatio,
+THR as 허벅지신장비율ThightoHeightRatio,
+AREA_ABDOMEN_MAX as 복부최대둘레높이의단면적,
+AREA_UPPER_ABDOMEN_MAX as 상복부최대둘레높이의단면적,
+AREA_LOWER_ABDOMEN_MAX as 하복부최대둘레높이의단면적,
+GIRTH_CHEST as 가슴둘레,
+GIRTH_WAIST as 허리둘레,
+GIRTH_NAVEL as 배꼽점둘레,
+GIRTH_LOW_ABDOMEN as 하복부둘레,
+GIRTH_HIP as 엉덩이둘레,
+GIRTH_KNEE as 무릎둘레오른쪽,
+AREA_CHEST as 가슴단면적,
+AREA_WAIST as 허리단면적,
+AREA_NAVEL as 배꼽단면적,
+AREA_LOW_ABDOMEN as 허리아래단면적,
+AREA_HIP as 엉덩이단면적,
+AREA_THICKTHIGH as 허벅지단면적오른쪽,
+AREA_KNEE as 무름단면적오른쪽,
+AREA_CALF as 종아리단면적오른쪽,
+KNOB as 손잡이높이
+from
+tsfmc_mailsystem.dbo.SCAN3D_ALL
+where ADD_DT > '20220201'
+and GUBUN=1),
+
+인바디 as(select PSENTRY as 고객번호, left(PRODATE, 8) as 측정일자,
+BD_WATER as 체수분, BD_PROTEIN as 단백질, BD_MINERAL as 무기질, BD_FAT as 체지방, BD_FATFREE as 체지방량, BD_WEIGHT as 체중,
+MU_HEIGHT as 신장,
+MU_WEIGHT as 골격근지방체중,
+MU_MUSCLE as 골격근지방골격근량,
+MU_FAT as 골격근체지방량,
+OB_BMI as 비만진단BMI,
+OB_FAT as 비만진단체지방률,
+OB_WAISTHIP as 비만진단복부지방률,
+WC_BODY as 신체발달,
+WC_BASIC as 기초대사량,
+BL_SBP as 혈압수축기,
+BL_DBP as 혈압이완기,
+BL_PULS as 혈압맥박수
+from
+tsfmc_data.dbo.ADM700T
+where INDATE > '20220201'),
+
+맥박혈압 as(select PSENTRY as 고객번호, VIT_PULSE as 맥박, VIT_BP as 혈압, MEDDATE as 측정일자 from
+tsfmc_data.dbo.ADM026T_D
+where MEDDATE  > '20220201'),
+
+흡연음주혈액형 as(
+SELECT A.PSENTRY as 고객번호, SMOKING as 흡연, DRINKING as 음주, B.BAS_IDEN AS 혈액형, SETDATE as 측정일자_흡연음주혈액형
+FROM tsfmc_data.dbo.OPE020T A
+LEFT JOIN (SELECT * FROM tsfmc_data.dbo.BAS010T WHERE BAS_CODE ='225') B
+ON A.BLOODTYPE=B.BAS_SETCODE
+WHERE SETDATE > '20220201')
+
+
+SELECT DISTINCT 
+후증상.고객번호, 후증상.수술일자, 후증상.수술의, 후증상.부위명,
+후증상.지방량, 후증상.기수,
+초음파_피벗.윗배, 초음파_피벗.아랫배, 초음파_피벗.허뒤좌안쪽, 초음파_피벗.허뒤좌외측, 초음파_피벗.좌팔외측, 초음파_피벗.좌팔내측, 초음파_피벗.좌러브, 초음파_피벗.좌브라, 초음파_피벗.종좌, 초음파_피벗.종좌외측, 초음파_피벗.측정일자 as 측정일자_초음파,
+MAIL.수술소요시간, MAIL.나이, MAIL.성별,
+SCAN.복부최대둘레, SCAN.상복부최대둘레, SCAN.하복부최대둘레, SCAN.허벅지둘레, SCAN.종아리둘레, SCAN.팔둘레, SCAN.가슴부분체적, SCAN.복부부분체적, SCAN.상복부부분체적, SCAN.하복부부분체적, SCAN.허벅지부분체적, SCAN.종아리부분체적, SCAN.팔좌부분체적, SCAN.팔우부분체적, SCAN.명치부분체적, SCAN.골반부분체적, SCAN.종아리좌부분체적, SCAN.종아리우부분체적, SCAN.뒷목점좌표X, SCAN.뒷목점좌표Y, SCAN.뒷목점좌표Z, SCAN.왼쪽겨드랑첨수직선과만나는어깨점X좌표, SCAN.왼쪽겨드랑첨수직선과만나는어깨점Y좌표, SCAN.왼쪽겨드랑첨수직선과만나는어깨점Z좌표, SCAN.오른쪽겨드랑첨수직선과만나는어깨점X좌표, SCAN.오른쪽겨드랑첨수직선과만나는어깨점Y좌표, SCAN.오른쪽겨드랑첨수직선과만나는어깨점Z좌표, SCAN.왼쪽어깨점X좌표, SCAN.왼쪽어깨점Y좌표, SCAN.왼쪽어깨점Z좌표, SCAN.오른쪽어깨점X좌표, SCAN.오른쪽어깨점Y좌표, SCAN.오른쪽어깨점Z좌표, SCAN.왼쪽겨드랑점X좌표, SCAN.왼쪽겨드랑점Y좌표, SCAN.왼쪽겨드랑점Z좌표, SCAN.오른쪽겨드랑점X좌표, SCAN.오른쪽겨드랑점Y좌표, SCAN.오른쪽겨드랑점Z좌표, SCAN.왼쪽겨드랑점X좌표MESH형상, SCAN.왼쪽겨드랑점Y좌표MESH형상, SCAN.왼쪽겨드랑점Z좌표MESH형상, SCAN.오른쪽겨드랑점X좌표MESH형상, SCAN.오른쪽겨드랑점Y좌표MESH형상, SCAN.오른쪽겨드랑점Z좌표MESH형상, SCAN.가슴높이, SCAN.허리높이, SCAN.배꼽X좌표, SCAN.배꼽Y좌표배꼽높이, SCAN.배꼽Z좌표, SCAN.하복부높이, SCAN.엉덩이높이, SCAN.샅X좌표, SCAN.샅Y좌표샅높이, SCAN.샅Z좌표, SCAN.허벅지높이, SCAN.무릎높이, SCAN.종아리높이, SCAN.복부최대둘레높이, SCAN.상복부최대둘레높이, SCAN.하복부최대둘레높이, SCAN.가슴부위시작높이, SCAN.가슴부의끝높이, SCAN.복부부위시작높이, SCAN.복부부위끝높이, SCAN.상복부부위시작높이, SCAN.상복부부위끝높이, SCAN.하복부부위시작높이, SCAN.하복부부위끝높이, SCAN.허벅지부위시작높이, SCAN.허벅지부위끝높이, SCAN.종아리부위시작높이, SCAN.종아리부위끝높이, SCAN.팔뚝부위왼쪽X좌표, SCAN.팔뚝부위오른쪽X좌표, SCAN.명치부위Y좌표명치높이, SCAN.골반부위Y좌표골반높이, SCAN.메쉬신장, SCAN.체적, SCAN.총표면적, SCAN.체질량지수, SCAN.허리가슴비율WaisttoChestRatio, SCAN.허리엉덩이비율WaisttoHipRatio, SCAN.허리신장비율WaisttoHeightRatio, SCAN.허벅지신장비율ThightoHeightRatio, SCAN.복부최대둘레높이의단면적, SCAN.상복부최대둘레높이의단면적, SCAN.하복부최대둘레높이의단면적, SCAN.가슴둘레, SCAN.허리둘레, SCAN.배꼽점둘레, SCAN.하복부둘레, SCAN.엉덩이둘레, SCAN.무릎둘레오른쪽, SCAN.가슴단면적, SCAN.허리단면적, SCAN.배꼽단면적, SCAN.허리아래단면적, SCAN.엉덩이단면적, SCAN.허벅지단면적오른쪽, SCAN.무름단면적오른쪽, SCAN.종아리단면적오른쪽, SCAN.손잡이높이, SCAN.측정일자 as 측정일자_SCAN, SCAN.스캔번호 as 스캔번호,
+흡연음주혈액형.흡연, 흡연음주혈액형.음주, 흡연음주혈액형.혈액형, 흡연음주혈액형.측정일자_흡연음주혈액형,
+인바디.체수분, 인바디.단백질, 인바디.무기질, 인바디.체지방, 인바디.체지방량, 인바디.체중, 인바디.신장, 인바디.골격근지방체중, 인바디.골격근지방골격근량, 인바디.골격근체지방량, 인바디.비만진단BMI, 인바디.비만진단체지방률, 인바디.비만진단복부지방률, 인바디.신체발달, 인바디.기초대사량, 인바디.측정일자 as 측정일자_인바디,
+후증상.target
+FROM 
+후증상
+LEFT JOIN 초음파_피벗
+on 후증상.고객번호=초음파_피벗.고객번호 and DATEDIFF(day, 초음파_피벗.측정일자, 후증상.수술일자) < 30 AND 초음파_피벗.측정일자 < 후증상.수술일자
+LEFT JOIN MAIL 
+on 후증상.고객번호=MAIL.고객번호 and 후증상.수술일자=MAIL.수술일자 and 후증상.수술의=MAIL.수술의
+LEFT JOIN SCAN
+on 후증상.고객번호=SCAN.고객번호 and DATEDIFF(day, SCAN.측정일자, 후증상.수술일자) < 30 AND SCAN.측정일자 < 후증상.수술일자
+LEFT JOIN 인바디
+on 후증상.고객번호=인바디.고객번호 and DATEDIFF(day, 인바디.측정일자, 후증상.수술일자) < 30 AND 인바디.측정일자 < 후증상.수술일자
+LEFT JOIN 흡연음주혈액형
+on 후증상.고객번호=흡연음주혈액형.고객번호
