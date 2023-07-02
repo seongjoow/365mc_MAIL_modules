@@ -44,8 +44,5 @@ def get_data_from_db(patient_id: str, date_of_surgery: str) -> pd.DataFrame:
 
     return db_data
 
-check = get_data_from_db('180000611', '20220620')
-print(check)
-
 
 
