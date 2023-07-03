@@ -10,6 +10,10 @@ def join_and_process_data(patient_id:str, date_of_surgery:str) -> pd.DataFrame:
     nas_data = get_data_from_nas(patient_id, date_of_surgery)
     db_data = get_data_from_db(patient_id, date_of_surgery)
     
+    # 필터링
+
+    # kpi generator 
+    
     # 데이터를 조인합니다.
     combined_data = pd.merge(nas_data, db_data, on='patient_id')  
 
