@@ -1,3 +1,7 @@
 패키지 설치 명령어
 
 pip install paramiko
+
+data_access_db.py 실행 전, 아래 명령어로 패키지 설치가 필요합니다.
+$ pip install -U pip
+$ pip install pymssql

@@ -1,13 +1,58 @@
-# DB 데이터 접근 모듈
+# Module accessing to DataBase
 
 import pandas as pd
-import sqlite3 # 예시 라이브러리
+import sqlalchemy
+import pyodbc
+from sqlalchemy.sql import text
+from sqlalchemy import create_engine
 
-def get_data_from_db(patient_id, date_of_surgery):
 
-    ############### 전부 예시임. 지우고 적절하게 코드 작성할 것 ###############
-    conn = sqlite3.connect('example.db')
-    query = f"SELECT * FROM table WHERE customer_id={patient_id} AND date_of_surgery='{date_of_surgery}'"
-    db_data = pd.read_sql_query(query, conn)
+def get_data_from_db(patient_id: str, date_of_surgery: str) -> pd.DataFrame:
+
+    # DB login info
+    server = '52.231.39.219' 
+    database = 'tsfmc_data' 
+    username = 'mc365' 
+    password = 'tkadbrdhmc1!'  
+    file_path = './query.txt'
+
+    engine = create_engine("mssql+pyodbc://" + username + ":" + password + "@" + server + "/" + database + "?driver=SQL+Server")
+
+
+    # Open and read query
+    with open(file_path, 'r', encoding='UTF8') as file:
+        sql = file.read()
+
+
+    # Connect to database
+    with engine.begin() as conn:
+        # Create text from query
+        query = text(sql)
+        # Save result to dataframe
+        df = pd.read_sql_query(query, conn)
+
+    # Select surgery based on specified patient_id and date_of_discovery
+    db_data = df[(df['고객번호'] == patient_id) & (df['수술일자'] == date_of_surgery)]
+    
+    # Exception
+    if db_data.empty:
+        # when patient_id not exist
+        if db_data['고객번호'].isin([patient_id]).any():
+            print(f"수술일자 {date_of_surgery}에 해당하는 수술이 없습니다.")
+
+        # when date_of_surgery not exist
+        elif db_data['수술일자'].isin([date_of_surgery]).any():
+            print(f"고객번호 {patient_id}에 해당하는 수술이 없습니다.")
+
+        # when both not exist
+        else:
+            print("해당 고객번호와 수술일자를 가진 데이터가 데이터베이스에 없습니다.")
+
+
+    # Close connection
     conn.close()
+
     return db_data
+
+
+
