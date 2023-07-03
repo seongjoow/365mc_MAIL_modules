@@ -5,7 +5,7 @@ import os
 import tempfile
 import pandas as pd
 
-
+# 원하는 수술번호 폴더에서 미터 좌표 파일 coordinate.csv를 불러옵니다.
 def load_csv_from_target_dir(sftp, target_dir_name, base_dir="/data"):
     target_dir_path = os.path.join(base_dir, target_dir_name)
     
@@ -25,8 +25,8 @@ def load_csv_from_target_dir(sftp, target_dir_name, base_dir="/data"):
         print(f"해당 수술 디렉토리나 coordinate.csv 파일을 찾을 수 없습니다: {csv_path}")
 
 
-def get_data_from_nas(patient_id: str, date_of_surgery: str) -> pd.DataFrame:
-    target_dir_name = patient_id + date_of_surgery
+def get_data_from_nas(surgery_id: str) -> pd.DataFrame:
+    target_dir_name = surgery_id
 
     # connect to NAS server
     transport = paramiko.Transport(('mc365.asuscomm.com', 63122))
