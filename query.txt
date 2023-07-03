@@ -32,14 +32,14 @@ AND SETDATE > '20220201'),
 
 초음파_피벗 as(SELECT *
 FROM (
-SELECT 고객번호, 
-   SUBSTRING(부위명, 1, CHARINDEX(' ', 부위명+' ') - 1) AS CTRL, 
-   초음파사이즈, 측정일자
-FROM 초음파
+    SELECT 고객번호, 
+           SUBSTRING(부위명, 1, CHARINDEX(' ', 부위명+' ') - 1) AS CTRL, 
+           초음파사이즈, 측정일자
+    FROM 초음파
 ) AS t
 PIVOT (
-MAX(초음파사이즈)
-FOR CTRL IN (윗배, 아랫배, 허뒤좌안쪽, 허뒤좌외측, 좌팔외측, 좌팔내측, 좌러브, 좌브라, 종좌, 종좌외측)
+    MAX(초음파사이즈)
+    FOR CTRL IN (윗배, 아랫배, 허뒤좌안쪽, 허뒤좌외측, 좌팔외측, 좌팔내측, 좌러브, 좌브라, 종좌, 종좌외측)
 ) AS p),
 
 후증상1 AS(SELECT A.*,B.MA_CODE,B.OPDATE -- 병원이 보내줌
@@ -214,8 +214,7 @@ SELECT DISTINCT
 MAIL.수술소요시간, MAIL.나이, MAIL.성별,
 SCAN.복부최대둘레, SCAN.상복부최대둘레, SCAN.하복부최대둘레, SCAN.허벅지둘레, SCAN.종아리둘레, SCAN.팔둘레, SCAN.가슴부분체적, SCAN.복부부분체적, SCAN.상복부부분체적, SCAN.하복부부분체적, SCAN.허벅지부분체적, SCAN.종아리부분체적, SCAN.팔좌부분체적, SCAN.팔우부분체적, SCAN.명치부분체적, SCAN.골반부분체적, SCAN.종아리좌부분체적, SCAN.종아리우부분체적, SCAN.뒷목점좌표X, SCAN.뒷목점좌표Y, SCAN.뒷목점좌표Z, SCAN.왼쪽겨드랑첨수직선과만나는어깨점X좌표, SCAN.왼쪽겨드랑첨수직선과만나는어깨점Y좌표, SCAN.왼쪽겨드랑첨수직선과만나는어깨점Z좌표, SCAN.오른쪽겨드랑첨수직선과만나는어깨점X좌표, SCAN.오른쪽겨드랑첨수직선과만나는어깨점Y좌표, SCAN.오른쪽겨드랑첨수직선과만나는어깨점Z좌표, SCAN.왼쪽어깨점X좌표, SCAN.왼쪽어깨점Y좌표, SCAN.왼쪽어깨점Z좌표, SCAN.오른쪽어깨점X좌표, SCAN.오른쪽어깨점Y좌표, SCAN.오른쪽어깨점Z좌표, SCAN.왼쪽겨드랑점X좌표, SCAN.왼쪽겨드랑점Y좌표, SCAN.왼쪽겨드랑점Z좌표, SCAN.오른쪽겨드랑점X좌표, SCAN.오른쪽겨드랑점Y좌표, SCAN.오른쪽겨드랑점Z좌표, SCAN.왼쪽겨드랑점X좌표MESH형상, SCAN.왼쪽겨드랑점Y좌표MESH형상, SCAN.왼쪽겨드랑점Z좌표MESH형상, SCAN.오른쪽겨드랑점X좌표MESH형상, SCAN.오른쪽겨드랑점Y좌표MESH형상, SCAN.오른쪽겨드랑점Z좌표MESH형상, SCAN.가슴높이, SCAN.허리높이, SCAN.배꼽X좌표, SCAN.배꼽Y좌표배꼽높이, SCAN.배꼽Z좌표, SCAN.하복부높이, SCAN.엉덩이높이, SCAN.샅X좌표, SCAN.샅Y좌표샅높이, SCAN.샅Z좌표, SCAN.허벅지높이, SCAN.무릎높이, SCAN.종아리높이, SCAN.복부최대둘레높이, SCAN.상복부최대둘레높이, SCAN.하복부최대둘레높이, SCAN.가슴부위시작높이, SCAN.가슴부의끝높이, SCAN.복부부위시작높이, SCAN.복부부위끝높이, SCAN.상복부부위시작높이, SCAN.상복부부위끝높이, SCAN.하복부부위시작높이, SCAN.하복부부위끝높이, SCAN.허벅지부위시작높이, SCAN.허벅지부위끝높이, SCAN.종아리부위시작높이, SCAN.종아리부위끝높이, SCAN.팔뚝부위왼쪽X좌표, SCAN.팔뚝부위오른쪽X좌표, SCAN.명치부위Y좌표명치높이, SCAN.골반부위Y좌표골반높이, SCAN.메쉬신장, SCAN.체적, SCAN.총표면적, SCAN.체질량지수, SCAN.허리가슴비율WaisttoChestRatio, SCAN.허리엉덩이비율WaisttoHipRatio, SCAN.허리신장비율WaisttoHeightRatio, SCAN.허벅지신장비율ThightoHeightRatio, SCAN.복부최대둘레높이의단면적, SCAN.상복부최대둘레높이의단면적, SCAN.하복부최대둘레높이의단면적, SCAN.가슴둘레, SCAN.허리둘레, SCAN.배꼽점둘레, SCAN.하복부둘레, SCAN.엉덩이둘레, SCAN.무릎둘레오른쪽, SCAN.가슴단면적, SCAN.허리단면적, SCAN.배꼽단면적, SCAN.허리아래단면적, SCAN.엉덩이단면적, SCAN.허벅지단면적오른쪽, SCAN.무름단면적오른쪽, SCAN.종아리단면적오른쪽, SCAN.손잡이높이, SCAN.측정일자 as 측정일자_SCAN, SCAN.스캔번호 as 스캔번호,
 흡연음주혈액형.흡연, 흡연음주혈액형.음주, 흡연음주혈액형.혈액형, 흡연음주혈액형.측정일자_흡연음주혈액형,
-인바디.체수분, 인바디.단백질, 인바디.무기질, 인바디.체지방, 인바디.체지방량, 인바디.체중, 인바디.신장, 인바디.골격근지방체중, 인바디.골격근지방골격근량, 인바디.골격근체지방량, 인바디.비만진단BMI, 인바디.비만진단체지방률, 인바디.비만진단복부지방률, 인바디.신체발달, 인바디.기초대사량, 인바디.측정일자 as 측정일자_인바디,
-후증상.target
+인바디.체수분, 인바디.단백질, 인바디.무기질, 인바디.체지방, 인바디.체지방량, 인바디.체중, 인바디.신장, 인바디.골격근지방체중, 인바디.골격근지방골격근량, 인바디.골격근체지방량, 인바디.비만진단BMI, 인바디.비만진단체지방률, 인바디.비만진단복부지방률, 인바디.신체발달, 인바디.기초대사량, 인바디.측정일자 as 측정일자_인바디
 FROM 
 후증상
 LEFT JOIN 초음파_피벗
