@@ -142,8 +142,9 @@ def preprocess_bodypart(input_df:pd.DataFrame)-> pd.DataFrame:
 
     df = df.drop(['측정일자_인바디'], axis = 1)
 
-    # Fill Nan to zero
+    # Fill Nan with zero
     df.fillna(0, inplace=True)
+    
 
     return df
 
