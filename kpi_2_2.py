@@ -299,7 +299,7 @@ class Kpi:
         df['diff_z'] = df['z'].diff().fillna(0)
         df['distance'] = np.sqrt(df['diff_x']**2 + df['diff_y']**2 + df['diff_z']**2)
         # 이동거리의 차이 계산
-        df['diff_distance'] = df['distance'].diff().fillna(0)
+        # df['diff_distance'] = df['distance'].diff().fillna(0)
 
         # frame번호의 최소와 최대 값을 기록
         self.min_frame_number = df['frame'].min()
@@ -325,7 +325,7 @@ class Kpi:
                 # 해당 section에서 프레임마다 손의 속력(m/s), 가속도(m/s^2)를 계산
                 # 그 후 section에서의 가속도의 평균(m/s^2)을 계산
                 section_frame = section_df['frame'].iloc[-1] - section_df['frame'].iloc[0]
-                section_list = section_df['diff_distance'].values.tolist()
+                section_list = section_df['distance'].values.tolist()
 
                 if section_frame != 0:
                     # 해당 section의 속력(m/s)
@@ -349,7 +349,7 @@ class Kpi:
                 # 해당 section에서 프레임마다 손의 속력(m/s), 가속도(m/s^2)를 계산
                 # 그 후 section에서의 가속도의 평균(m/s^2)을 계산
                 section_frame = section_df['frame'].iloc[-1] - section_df['frame'].iloc[0]
-                section_list = section_df['diff_distance'].values.tolist()
+                section_list = section_df['distance'].values.tolist()
 
                 
                 if section_frame != 0:
