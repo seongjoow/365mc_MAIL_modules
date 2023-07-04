@@ -1,4 +1,4 @@
-# 후유증 예측 모듈
+# Module for predicting
 
 import os
 import joblib

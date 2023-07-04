@@ -1,8 +1,6 @@
 import pandas as pd
-import glob
-import os
 import numpy as np
-import csv
+
 
 class Kpi:
     def __init__(self, 
@@ -279,7 +277,6 @@ class Kpi:
         df['diff_z'] = df['z'].diff().fillna(0)
         df['distance'] = np.sqrt(df['diff_x']**2 + df['diff_y']**2 + df['diff_z']**2)
         # 이동거리의 차이 계산
-        # df['diff_distance'] = df['distance'].diff().fillna(0)
 
         # frame번호의 최소와 최대 값을 기록
         self.min_frame_number = df['frame'].min()

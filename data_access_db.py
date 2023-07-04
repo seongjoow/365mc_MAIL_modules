@@ -1,4 +1,4 @@
-# Module accessing to DataBase
+# Module for accessing DataBase
 
 import pandas as pd
 import sqlalchemy
