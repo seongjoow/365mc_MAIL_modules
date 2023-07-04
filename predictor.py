@@ -23,7 +23,7 @@ def predict_sideeffect(patient_id, surgery_date):
     input_data = join_and_process_data(patient_id, surgery_date)
 
     # 모델에 넣을 데이터에서 메타 데이터를 제거합니다.
-    input_data = input_data.drop(['SurgeryID, PatientID, SurgerDate, BodyPart'], axis=1)
+    input_data = input_data.drop(['SurgeryID', 'PatientID', 'SurgeryDate', 'BodyPart'], axis=1)
 
     predictions = {}
     confidences = {}
