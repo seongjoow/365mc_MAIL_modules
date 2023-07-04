@@ -5,12 +5,12 @@ from data_access_db import get_data_from_db
 
 
 
-def load_and_rename_column_db_data(patient_id:str, date_of_surgery:str) -> pd.DataFrame:
+def load_and_rename_column_db_data(patient_id:str, surgery_date:str) -> pd.DataFrame:
    
-    df = get_data_from_db(patient_id, date_of_surgery)
+    df = get_data_from_db(patient_id, surgery_date)
 
     if (len(df) == 0):
-        print(f"데이터베이스에서 데이터를 추출하는 데 실패하였습니다. 고객번호:{patient_id}, 수술날짜: {date_of_surgery}")
+        print(f"데이터베이스에서 데이터를 추출하는 데 실패하였습니다. 고객번호:{patient_id}, 수술날짜: {surgery_date}")
         
     else:
         # Rename column by meta-data

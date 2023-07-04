@@ -7,7 +7,7 @@ from sqlalchemy.sql import text
 from sqlalchemy import create_engine
 
 
-def get_data_from_db(patient_id: str, date_of_surgery: str) -> pd.DataFrame:
+def get_data_from_db(patient_id: str, surgery_date: str) -> pd.DataFrame:
 
     # DB login info
     server = '52.231.39.219' 
@@ -32,16 +32,16 @@ def get_data_from_db(patient_id: str, date_of_surgery: str) -> pd.DataFrame:
         df = pd.read_sql_query(query, conn)
 
     # Select surgery based on specified patient_id and date_of_discovery
-    db_data = df[(df['고객번호'] == patient_id) & (df['수술일자'] == date_of_surgery)]
+    db_data = df[(df['고객번호'] == patient_id) & (df['수술일자'] == surgery_date)]
     
     # Exception
     if db_data.empty:
         # when patient_id not exist
         if db_data['고객번호'].isin([patient_id]).any():
-            print(f"수술일자 {date_of_surgery}에 해당하는 수술이 없습니다.")
+            print(f"수술일자 {surgery_date}에 해당하는 수술이 없습니다.")
 
-        # when date_of_surgery not exist
-        elif db_data['수술일자'].isin([date_of_surgery]).any():
+        # when surgery_date not exist
+        elif db_data['수술일자'].isin([surgery_date]).any():
             print(f"고객번호 {patient_id}에 해당하는 수술이 없습니다.")
 
         # when both not exist
