@@ -9,9 +9,6 @@ from db_data_processing import load_and_rename_column_db_data, preprocess_ultra,
 
 def process_db_data(patient_id:str, surgery_date:str) -> pd.DataFrame:
 
-    # Connect to DB server, and get data
-    db_access_data = get_data_from_db(patient_id, surgery_date)
-
     # Load and renam the data
     renamed_data = load_and_rename_column_db_data(patient_id, surgery_date)
 
@@ -30,17 +27,12 @@ def process_db_data(patient_id:str, surgery_date:str) -> pd.DataFrame:
     # Final processed DB data
     db_proessed_data = preprocess_bodypart(surgeryid)
 
-    # db_proessed_data.to_excel("./emr_scan_ultra_test.xlsx", index=False)
-
 
     return db_proessed_data
 
 
 def join_and_process_data(patient_id: str, surgery_date: str) -> pd.DataFrame:
     surgery_id = patient_id + surgery_date
-
-    # Get data from NAS
-    nas_data = get_data_from_nas(surgery_date)
 
     # Get processed_db data
     df_emr_scan_ultra = process_db_data(patient_id, surgery_date)
