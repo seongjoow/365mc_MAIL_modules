@@ -1,7 +1,7 @@
 from predictor import predict_sideeffect
 
-patient_id = "210007811"
-date = "20221109"
+# patient_id = "210038775"
+# surgery_date = "20230215"
 
 def predict_and_return(patient_id: str, surgery_date: str):
 
