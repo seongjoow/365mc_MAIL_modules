@@ -14,7 +14,7 @@ class Kpi:
                  max_section_number: int,
                  df_coord: pd.DataFrame):
         
-        # customerID(str): 고객번호입니다.
+        # patientID(str): 고객번호입니다.
         # date(str): 수술일자입니다.
         # cam(int): Cam번호입니다. 1 또는 2의 값을 갖습니다. Cam을 기준으로 프레임 정보를 갱신합니다.
         # section_size(int): 전체 수술을 등시간으로 나눌 때 구간의 길이입니다. 단위는 프레임입니다.
@@ -24,7 +24,6 @@ class Kpi:
 
         # min_frame_number(int): 해당 Cam의 수술의 전체 영상의 최초 프레임 번호입니다. 
         # max_frame_number(int): 해당 Cam의 수술의 전체 영상의 마지막 프레임 번호입니다.
-        # whole_surgery_data_path(str): 해당 전체 수술에 대한 파일 경로입니다.
 
         # Options
         self.patientID: str = patientID
@@ -38,10 +37,6 @@ class Kpi:
         # Info of Data
         self.min_frame_number: int = None
         self.max_frame_number: int = None
-        # self.whole_surgery_data_path: str = None
-
-        # File Path Setting
-        # self.whole_surgery_data_path = os.path.join(folder_path, 'coordinate.csv')
         
         # print(self.whole_surgery_data_path)
         self.load_data()
@@ -49,7 +44,6 @@ class Kpi:
         self.check_empty_result()
 
     def load_data(self):
-        # self.data = pd.read_csv(self.whole_surgery_data_path)
         if self.data.empty:
             raise Exception('coordinate.csv에 row가 없습니다.')
 
@@ -59,20 +53,6 @@ class Kpi:
     def check_empty_result(self):
         if self.filtered_data.empty:
             raise Exception('지정한 cam에 해당하는 row가 coordinate.csv에 없습니다.')
-
-        
-    def summary(self):
-        # 수술 정보를 출력합니다.
-        # 1. 고객번호
-        # 2. 수술일자
-        # 3. Cam번호
-        # 4. 클러스터 개수
-        # 5. 최대 프레임 번호
-        # 6. 총 프레임 개수
-        # 7. 결측 프레임 개수
-        print("1. 고객번호:", self.patientID)
-        print("2. 수술일자:", self.date)
-        print("3. Cam번호:", self.cam)
 
 
     def cal_local_minima(self, input_df: pd.DataFrame) -> list:
@@ -427,7 +407,6 @@ class Kpi:
     # 결과 딕셔너리 반환 함수
     def return_result_dict(self) -> dict():
         # 데이터를 불러와 설정한 cam에 해당하는 데이터를 사용합니다.
-        # df = pd.read_csv(self.whole_surgery_data_path)
         df = self.data
         df = df[df['cam'] == self.cam]
         # x, y, z 좌표 중 하나라도 NaN인 프레임은 drop하여 사용합니다.
