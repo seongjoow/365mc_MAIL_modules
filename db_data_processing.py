@@ -12,7 +12,7 @@ def load_and_rename_column_db_data(patient_id:str, date_of_surgery:str) -> pd.Da
     if (len(df) != 0):
         print(f"성공적으로 {patient_id}고객의 {date_of_surgery}수술을 DB에서 추출하였습니다.")
     else:
-        print(f"{patient_id}고객의 {date_of_surgery}수술을 DB에서 추출하는데 실패하였습니다.")
+        print(f"{patient_id}고객의 {date_of_surgery}수술을 DB에서 추출하는 데 실패하였습니다.")
 
     # Rename column by meta-data
     df.rename(columns={'고객번호': 'PatientID', '수술일자': 'SurgeryDate', '부위명': 'BodyPart'}, inplace=True)
