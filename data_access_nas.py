@@ -6,7 +6,7 @@ import tempfile
 import pandas as pd
 
 # 원하는 수술번호 폴더에서 미터 좌표 파일 coordinate.csv를 불러옵니다.
-def load_csv_from_target_dir(sftp, target_dir_name, base_dir="/data"):
+def load_csv_from_target_dir(sftp, target_dir_name, base_dir="data"):
     target_dir_path = os.path.join(base_dir, target_dir_name)
     
     try:
