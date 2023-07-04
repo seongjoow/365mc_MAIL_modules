@@ -7,11 +7,13 @@
     명령어
     
     pip install pandas
+    pip install numpy
     pip install pyodbc
     pip install sqlalchemy
     pip install paramiko
     pip install joblib
-    
+    pip install scikit-learn
+
     
     명령어 입력 방법 (1,2 중 선택)
     

@@ -3,6 +3,7 @@
 import os
 import joblib
 import pandas as pd
+import numpy as np
 from data_processing import join_and_process_data
 
 
@@ -31,10 +32,10 @@ def predict_sideeffect(patient_id, surgery_date):
     for side_effect, model in models.items():
         # Predict using each model
         prediction = model.predict(input_data)
-        predictions[side_effect] = prediction
+        predictions[side_effect] = prediction[0]
 
         # scikit-learn의 predict_proba 메서드를 사용하여 예측의 신뢰도를 계산합니다.
         confidence = model.predict_proba(input_data)
-        confidences[side_effect] = confidence
+        confidences[side_effect] = np.amax(confidence)
 
     return predictions, confidences
