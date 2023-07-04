@@ -7,13 +7,13 @@ from data_access_nas import get_data_from_nas
 from db_data_processing import load_and_rename_column_db_data, preprocess_ultra, preprocess_sex, leave_feature_columns, concat_surgeryid, preprocess_bodypart 
 
 
-def process_db_data(patient_id:str, date_of_surgery:str) -> pd.DataFrame:
+def process_db_data(patient_id:str, surgery_date:str) -> pd.DataFrame:
 
     # Connect to DB server, and get data
-    db_access_data = get_data_from_db(patient_id, date_of_surgery)
+    db_access_data = get_data_from_db(patient_id, surgery_date)
 
     # Load and renam the data
-    renamed_data = load_and_rename_column_db_data(patient_id, date_of_surgery)
+    renamed_data = load_and_rename_column_db_data(patient_id, surgery_date)
 
     # Add ultra column
     ultra = preprocess_ultra(renamed_data)
@@ -22,7 +22,7 @@ def process_db_data(patient_id:str, date_of_surgery:str) -> pd.DataFrame:
     sex = preprocess_sex(ultra)
 
     # Extract leave needed columns
-    feature = leave_feature_columns(ultra)
+    feature = leave_feature_columns(sex)
 
     # Add SurgeryID column for meta_data
     surgeryid = concat_surgeryid(feature)
@@ -30,18 +30,20 @@ def process_db_data(patient_id:str, date_of_surgery:str) -> pd.DataFrame:
     # Final processed DB data
     db_proessed_data = preprocess_bodypart(surgeryid)
 
+    # db_proessed_data.to_excel("./emr_scan_ultra_test.xlsx", index=False)
+
 
     return db_proessed_data
 
 
-def join_and_process_data(patient_id: str, date_of_surgery: str) -> pd.DataFrame:
-    surgery_id = patient_id + date_of_surgery
+def join_and_process_data(patient_id: str, surgery_date: str) -> pd.DataFrame:
+    surgery_id = patient_id + surgery_date
 
     # Get data from NAS
-    nas_data = get_data_from_nas(patient_id, date_of_surgery)
+    nas_data = get_data_from_nas(surgery_date)
 
     # Get processed_db data
-    df_emr_scan_ultra = process_db_data(patient_id, date_of_surgery)
+    df_emr_scan_ultra = process_db_data(patient_id, surgery_date)
     df_kpi = generate_kpi(surgery_id)
 
 
@@ -59,10 +61,10 @@ def join_and_process_data(patient_id: str, date_of_surgery: str) -> pd.DataFrame
 
     
     if(df_emr_scan_ultra_flag == 0):
-        print(f"DB에 해당 수술 데이터가 존재하지 않아 KPI와 조인을 할 수 없습니다. 고객번호:{patient_id}, 수술날짜:{date_of_surgery}")
+        print(f"DB에 해당 수술 데이터가 존재하지 않아 KPI와 조인을 할 수 없습니다. 고객번호:{patient_id}, 수술날짜:{surgery_date}")
     
     elif(df_kpi_flag == 0):
-        print(f"해당 수술의 KPI 객체가 생성되지 않아 EMR_SCAN_ULTRA 데이터와 조인을 할 수 없습니다. 고객번호:{patient_id}, 수술날짜:{date_of_surgery}")
+        print(f"해당 수술의 KPI 객체가 생성되지 않아 EMR_SCAN_ULTRA 데이터와 조인을 할 수 없습니다. 고객번호:{patient_id}, 수술날짜:{surgery_date}")
     
     else:
         # Add 'SugeryID' column to the front
