@@ -8,10 +8,10 @@ from data_processing import join_and_process_data
 
 # Path to each model
 model_paths = {
-    '장액종': os.path.join("models", ".pkl"),
-    '멍': os.path.join("models", ".pkl"),
-    '뭉침': os.path.join("models", ".pkl"),
-    '울퉁불퉁': os.path.join("models", ".pkl")
+    '장액종': os.path.join("models", "장액종_RFmodel.pkl"),
+    '멍': os.path.join("models", "멍_RFmodel.pkl"),
+    '뭉침': os.path.join("models", "뭉침_RFmodel.pkl"),
+    '울퉁불퉁': os.path.join("models", "울퉁불퉁_RFmodel.pkl")
 }
 
 # Load models
@@ -21,6 +21,9 @@ for side_effect, path in model_paths.items():
 
 def predict_sideeffect(patient_id, surgery_date):
     input_data = join_and_process_data(patient_id, surgery_date)
+
+    # 모델에 넣을 데이터에서 메타 데이터를 제거합니다.
+    input_data = input_data.drop(['SurgeryID, PatientID, SurgerDate, BodyPart'], axis=1)
 
     predictions = {}
     confidences = {}
