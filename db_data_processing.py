@@ -9,18 +9,17 @@ def load_and_rename_column_db_data(patient_id:str, date_of_surgery:str) -> pd.Da
    
     df = get_data_from_db(patient_id, date_of_surgery)
 
-    if (len(df) != 0):
-        print(f"성공적으로 {patient_id}고객의 {date_of_surgery}수술을 DB에서 추출하였습니다.")
+    if (len(df) == 0):
+        print(f"데이터베이스에서 데이터를 추출하는 데 실패하였습니다. 고객번호:{patient_id}, 수술날짜: {date_of_surgery}")
+        
     else:
-        print(f"{patient_id}고객의 {date_of_surgery}수술을 DB에서 추출하는 데 실패하였습니다.")
-
-    # Rename column by meta-data
-    df.rename(columns={'고객번호': 'PatientID', '수술일자': 'SurgeryDate', '부위명': 'BodyPart'}, inplace=True)
+        # Rename column by meta-data
+        df.rename(columns={'고객번호': 'PatientID', '수술일자': 'SurgeryDate', '부위명': 'BodyPart'}, inplace=True)
 
     return df
 
 
-def preprocessing_ultra(input_df:pd.DataFrame) -> pd.DataFrame:
+def preprocess_ultra(input_df:pd.DataFrame) -> pd.DataFrame:
 
     # Add ultra size columns
     input_df['초음파사이즈1'] = 0
@@ -50,9 +49,9 @@ def preprocessing_ultra(input_df:pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def preprocessing_sex(input_df:pd.DataFrame) -> pd.DataFrame:
+def preprocess_sex(input_df:pd.DataFrame) -> pd.DataFrame:
 
-    # one-hot encoding 
+    # One-hot encoding sex columns
     input_df['성별__M'] = 0
     input_df['성별__F'] = 0
     input_df['성별__E'] = 0
@@ -67,8 +66,9 @@ def preprocessing_sex(input_df:pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def only_feature_columns(input_df:pd.DataFrame) -> pd.DataFrame:
+def leave_feature_columns(input_df:pd.DataFrame) -> pd.DataFrame:
 
+    # Leave only needed feature columns
     meta_columns = ['PatientID', 'SurgeryDate', 'BodyPart']
     EMR_columns = ['기수', '수술소요시간', '나이', '흡연', '음주', '체수분', '단백질', '체중', '지방량', '체지방', '체지방량', '골격근지방골격근량', '비만진단BMI', '비만진단체지방률', '비만진단복부지방률', '기초대사량', '성별__E','성별__F', '성별__M']
     SCAN_columns = ['허벅지부분체적', '종아리우부분체적', '상복부최대둘레', '엉덩이둘레', '배꼽점둘레', '종아리부분체적', '가슴부분체적', '하복부최대둘레높이의단면적', '상복부최대둘레높이', '종아리둘레', '복부최대둘레높이', '허벅지신장비율ThightoHeightRatio', '총표면적', '복부부분체적', '명치부분체적', '허리둘레', '복부최대둘레', '하복부최대둘레', '허리엉덩이비율WaisttoHipRatio', '하복부둘레', '상복부최대둘레높이의단면적', '허리가슴비율WaisttoChestRatio', '하복부부분체적', '상복부부분체적', '골반부분체적', '종아리좌부분체적', '체질량지수', '팔둘레', '체적', '팔좌부분체적', '메쉬신장', '허벅지둘레', '허리신장비율WaisttoHeightRatio', '복부최대둘레높이의단면적', '팔우부분체적', '무릎둘레오른쪽', '가슴둘레']
@@ -82,12 +82,14 @@ def only_feature_columns(input_df:pd.DataFrame) -> pd.DataFrame:
 
 def concat_surgeryid(input_df:pd.DataFrame) -> pd.DataFrame:
     
-    # create 'SurgeryID'
+    # Create 'SurgeryID'
+    input_df = input_df.copy()
     input_df['SurgeryID'] = input_df['PatientID'].astype(str) + input_df['SurgeryDate'].astype(str)
 
+    # Change type of columns to list
     columns = input_df.columns.tolist()
 
-    # move 'SurgeryID' column to the front
+    # Move 'SurgeryID' column to the front
     columns = [columns[-1]] + columns[:-1]
 
     df = input_df[columns]
@@ -96,7 +98,7 @@ def concat_surgeryid(input_df:pd.DataFrame) -> pd.DataFrame:
 
 
 # Extract only one record
-def preprocessing_bodypart(input_df:pd.DataFrame)-> pd.DataFrame:
+def preprocess_bodypart(input_df:pd.DataFrame)-> pd.DataFrame:
     
     # Name of columns that has all Nan values
     nan_columns = []
@@ -132,14 +134,15 @@ def preprocessing_bodypart(input_df:pd.DataFrame)-> pd.DataFrame:
     # Select the records with the lowest nan value.
     df = valid_data[valid_data.isnull().sum(axis=1) == valid_data.isnull().sum(axis=1).min()]
 
-    # if Nan value are two or more, select the recentest one.
+    # If Nan value are two or more, select the recentest one.
     if (len(df) > 1) :
         df = df.sort_values('측정일자_인바디', ascending=False).head(1)
 
     df = df.drop(['측정일자_인바디'], axis = 1)
 
-    # fill Nan to zero
+    # Fill Nan with zero
     df.fillna(0, inplace=True)
+    
 
     return df
 

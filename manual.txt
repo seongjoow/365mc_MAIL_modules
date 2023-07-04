@@ -1,7 +1,29 @@
-패키지 설치 명령어
+✓ 패키지 설치
 
-pip install paramiko
+    파일 실행 전, 먼저 패키지 설치가 필요합니다.
+    터미널에서 아래 명령어를 입력하여 설치합니다.
 
-data_access_db.py 실행 전, 아래 명령어로 패키지 설치가 필요합니다.
-$ pip install -U pip
-$ pip install pymssql
+
+    명령어
+    
+    pip install paramiko
+    pip install pyodbc
+    pip install sqlalchemy
+    
+    
+    명령어 입력 방법 (1,2 중 선택)
+    
+    (1) 명령어를 한 줄씩 입력 후 Enter
+    (2) 명령어 3줄을 한꺼번에 복사(ctrl+C).
+        터미널 입력창에서 오른쪽 커서를 클릭하여 붙여넣기를 실행한 후 Enter
+
+
+
+✓ 실행 방법
+
+    (1) main.py 파일을 엽니다.
+    (2) patient_id에 작은따옴표와 고객번호를 입력합니다. EX) '123456789'
+    (3) date에 작은따옴표와 해당 고객의 수술날짜를 입력합니다. EX) '20230701'
+    (4) main.py 파일을 실행합니다.
+
+
