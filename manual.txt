@@ -6,24 +6,31 @@
 
     명령어
     
-    pip install paramiko
+    pip install pandas
     pip install pyodbc
     pip install sqlalchemy
+    pip install paramiko
+    pip install joblib
     
     
     명령어 입력 방법 (1,2 중 선택)
     
-    (1) 명령어를 한 줄씩 입력 후 Enter
-    (2) 명령어 3줄을 한꺼번에 복사(ctrl+C).
-        터미널 입력창에서 오른쪽 커서를 클릭하여 붙여넣기를 실행한 후 Enter
+    (1) 명령어를 한 줄씩 입력 후 Enter.
+    (2) 명령어 모든 줄을 한꺼번에 복사(ctrl+C).
+        터미널 입력창에서 오른쪽 커서를 클릭하여 붙여넣기를 실행한 후 Enter.
 
 
 
 ✓ 실행 방법
 
-    (1) main.py 파일을 엽니다.
-    (2) patient_id에 작은따옴표와 고객번호를 입력합니다. EX) '123456789'
-    (3) date에 작은따옴표와 해당 고객의 수술날짜를 입력합니다. EX) '20230701'
-    (4) main.py 파일을 실행합니다.
+    (1) main.py 파일에 predict_and_return() 함수가 있습니다.
+    (2) 위 함수는 고객번호(str)와 수술일(str)을 인자로 받습니다.
+    (3) 위 함수는 고객번호(str), 수술일(str), 예측 값(dict), confidence 값(dict)을 반환합니다.
+    (4) patient_id, surgery_date, predictions, confidences = predict_and_return(patient_id, surgery_date)
+        와 같이 함수를 호출하고 반환된 값을 변수에 저장하여 사용하시면 됩니다.
+    (5) 예측 값과 confidence 값은 딕셔너리 형태이므로, 아래와 같이 원하는 값에 접근할 수 있습니다.
+        Ex) 장액종 모델의 예측 값: predictions['장액종']
+        Ex) 장액종 모델의 confidence 값: confidence['장액종']
+        * 4가지 후유증 (장액종, 멍, 뭉침, 울퉁불퉁) 에 대해 동일한 방식으로 접근하면 됩니다.
 
 

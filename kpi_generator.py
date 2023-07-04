@@ -8,6 +8,9 @@ from data_access_nas import get_data_from_nas
 def generate_kpi(surgery_id: str) -> pd.DataFrame:
     df_coord = get_data_from_nas(surgery_id)
 
+    if df_coord is None:
+        raise ValueError(f"NAS 서버에서 {surgery_id}의 coordinate.csv를 찾을 수 없습니다.")
+
     # Options를 설정합니다.
     cam = 1
     section_size = 5*1800 # section_size = 분*1800
