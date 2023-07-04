@@ -1,9 +1,10 @@
-# NAS 데이터 접근 모듈 (윈도우 용)
+# Module for accessing NAS data (윈도우 용)
 
 import paramiko
 import os
 import tempfile
 import pandas as pd
+
 
 # 원하는 수술번호 폴더에서 미터 좌표 파일 coordinate.csv를 불러옵니다.
 def load_csv_from_target_dir(sftp, target_dir_name, base_dir="/data"):
@@ -50,17 +51,17 @@ def load_csv_from_target_dir(sftp, target_dir_name, base_dir="/data"):
 def get_data_from_nas(surgery_id: str) -> pd.DataFrame:
     target_dir_name = surgery_id
 
-    # connect to NAS server
+    # Connect to NAS server
     transport = paramiko.Transport(('mc365.asuscomm.com', 63122))
     transport.connect(username='mc365', password='tkadbrdhMC1!')
 
-    # open the SFTP session
+    # Open the SFTP session
     sftp = paramiko.SFTPClient.from_transport(transport)
 
     # Load CSV from the target directory
     df = load_csv_from_target_dir(sftp, target_dir_name)
 
-    # close the SFTP session
+    # Close the SFTP session
     sftp.close()
     transport.close()
 
