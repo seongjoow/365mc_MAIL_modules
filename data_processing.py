@@ -78,5 +78,4 @@ def join_and_process_data(patient_id: str, date_of_surgery: str) -> pd.DataFrame
 
     processed_data = combined_data
 
-
     return processed_data
