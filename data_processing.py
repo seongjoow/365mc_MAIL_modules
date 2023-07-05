@@ -1,9 +1,7 @@
 # Module for join and processing data
 
 import pandas as pd
-from data_access_db import get_data_from_db
 from kpi_generator import generate_kpi
-from data_access_nas import get_data_from_nas
 from db_data_processing import load_and_rename_column_db_data, preprocess_ultra, preprocess_sex, leave_feature_columns, concat_surgeryid, preprocess_bodypart 
 
 

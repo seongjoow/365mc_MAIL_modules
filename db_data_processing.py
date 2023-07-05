@@ -4,7 +4,6 @@ import pandas as pd
 from data_access_db import get_data_from_db
 
 
-
 def load_and_rename_column_db_data(patient_id:str, surgery_date:str) -> pd.DataFrame:
    
     df = get_data_from_db(patient_id, surgery_date)

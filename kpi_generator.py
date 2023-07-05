@@ -1,7 +1,6 @@
 from kpi_2_2 import Kpi
 import pandas as pd
 import gc
-import os
 from data_access_nas import get_data_from_nas
 
 
